@@ -36,7 +36,27 @@ def sequences_manually():
     if len(sequences) < 2:
         print("Error: Need at least 2 sequences")
         return sequences_manually()
-    show_results_for_user_seq_input(sequences)
+    try:
+        matrix_similarit = msa_alghoritm(sequences)
+        final_al = center_star(matrix_similarit, sequences)
+        centerSeq = get_main_seq(matrix_similarit, sequences)
+        msa_result = merge_alignments(final_al, centerSeq)
+        alignments = merge_alignments(final_al, centerSeq)
+        msa = print_msa_table(msa_result)
+        score = score_msa(msa_result)
+        table1 = msa_to_table(msa_result)
+        table_without_gaps = remove_gaps(table1)
+        distance_table=get_distances(table_without_gaps)
+        root_node = create_final_matrix(distance_table)
+        final_result = results_sequences_text(sequences, matrix_similarit, final_al,
+                                              alignments, score, distance_table,
+                                              root_node)
+        print(final_result)
+        visualize_tree(root_node)
+        save_results(final_result)
+
+    except Exception as e:
+        print(f"Error processing sequences: {str(e)}")
 
 def distance_matrix_manually():
     print("\nEnter number of sequences: ")
@@ -72,41 +92,14 @@ def distance_matrix_manually():
                 except ValueError:
                     print("Please enter a number")
     np.fill_diagonal(matrix.values, 0)
-    print("\nGenerated distance matrix:")
-    print(matrix)
-    show_results_distance_matrix(matrix)
-
-def show_results_for_user_seq_input(sequences:list):
-    matrix_similarit = msa_alghoritm(sequences)
-    final_al = center_star(matrix_similarit, sequences)
-    centerSeq = get_main_seq(matrix_similarit, sequences)
-    msa_result = merge_alignments(final_al, centerSeq)
-    print("Similarity Matrix:")
-    print(matrix_similarit)
-
-    print("\nFinal Alignments:")
-    print(final_al)
-    print(merge_alignments(final_al, centerSeq))
-
-    print("\nMSA Result:")
-    print_msa_table(msa_result)
-    score = score_msa(msa_result)
-    print(f"Total MSA Score: {score}")
-    table1 = msa_to_table(msa_result)
-    table_without_gaps = remove_gaps(table1)
-    print(table_without_gaps)
-    distance_table=get_distances(table_without_gaps)
-    show_results_distance_matrix(distance_table)
-
-    print(distance_table)
-    min = get_smallest_distance(distance_table)
-    position = get_position_of_smallest_distance(min, distance_table)
-    root_node = create_final_matrix(distance_table)
-
-    print("TREE:")
-    root_node.print()
-
-    visualize_tree(root_node)
+    try:
+        root_node = create_final_matrix(matrix)
+        final_result = results_sequences_distance_matrix(matrix, root_node)
+        print(final_result)
+        visualize_tree(root_node)
+        save_results(final_result)
+    except Exception as e:
+        print(f"Error processing sequences: {str(e)}")
 
 def show_results_distance_matrix(distance_table:DataFrame):
     root_node = create_final_matrix(distance_table)
@@ -145,6 +138,70 @@ def example_data():
     root_node.print()
 
     visualize_tree(root_node)
+def results_sequences_text(sequences: list, matrix_similarit: pd.DataFrame,
+                           final_al: pd.DataFrame, alignments, score,
+                           table_without_gaps, root_node):
+    results = [
+        "*===* UPGMA Phylogenetic Tree Analysis Results *===*",
+        "\n=== INPUT SEQUENCES ==="
+    ]
+
+    for i, seq in enumerate(sequences, 1):
+        results.append(f"Sequence {i}: {str(seq)}")
+
+    sections = [
+        ("\n=== SIMILARITY MATRIX ===", matrix_similarit),
+        ("\n=== FINAL ALIGNMENTS ===", final_al),
+        ("\n=== MULTIPLE ALIGNMENTS ===", alignments),
+        ("\n=== MSA SCORE ===", f"Total Score: {score}"),
+        ("\n=== DISTANCE MATRIX ===", table_without_gaps),
+        ("\n=== PHYLOGENETIC TREE ===", get_tree_text(root_node))
+    ]
+
+    for header, content in sections:
+        results.append(header)
+        results.append(str(content))
+
+    return "\n".join(results)
+
+
+def results_sequences_distance_matrix(distance_matrix,root_node):
+    results = [
+        "*===* UPGMA Phylogenetic Tree Analysis Results *===*",
+        "\n=== INPUT DISTANCE MATRIX ==="
+    ]
+
+    sections = [
+        ("\n=== DISTANCE MATRIX ===", distance_matrix),
+        ("\n=== PHYLOGENETIC TREE ===", get_tree_text(root_node))
+    ]
+    for header, content in sections:
+        results.append(header)
+        results.append(str(content))
+    return "\n".join(results)
+
+def save_results(results_text: str, filename: str = None):
+    if filename is None:
+        filename = f"upgma_results.txt"
+    try:
+        with open(filename, 'w') as f:
+            f.write(results_text)
+        print(f"\nResults successfully saved to {filename}")
+    except Exception as e:
+        print(f"Error saving results: {str(e)}")
+
+def get_tree_text(root_node):
+    from io import StringIO
+    import sys
+
+    old_stdout = sys.stdout
+    sys.stdout = buffer = StringIO()
+
+    print("TREE:")
+    root_node.print()
+
+    sys.stdout = old_stdout
+    return buffer.getvalue()
 
 if __name__ == '__main__':
     get_user_input()
