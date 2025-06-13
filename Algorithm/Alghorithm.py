@@ -1,4 +1,5 @@
 
+from __future__ import annotations
 from collections import deque
 from ete3 import Tree, TreeStyle, NodeStyle, TextFace
 
@@ -7,6 +8,8 @@ import pandas as pd
 from pandas.core.interchange.dataframe_protocol import DataFrame
 
 from Sequences.Sequences import SequenceUser, convert_to_sequence
+
+
 
 
 #steps:
@@ -36,6 +39,16 @@ class Node:
 
     def is_leaf(self)->bool:
         return self.left is None and self.right is None
+
+    def get_leaves(self, leaves : list[Node] = None) -> list[Node]:
+        if not leaves:
+            leaves = []
+        if self.is_leaf():
+            leaves.append(self)
+            return leaves
+        leaves = self.right.get_leaves(leaves)
+        leaves = self.left.get_leaves(leaves)
+        return leaves
 
     def print(self):
         lvl=0
@@ -264,11 +277,21 @@ def new_distance_matrix(df:DataFrame,position):
                 new_matrix.iloc[i,j]=df.loc[label_i,label_j]
     return new_matrix
 
+def calcualte_internal_node_depth(node : Node, initial_distance_matrix : DataFrame):
+    depth = 0
+    right_leaves = node.right.get_leaves()
+    left_leaves = node.left.get_leaves()
+    for right_leaf in right_leaves:
+        for left_leaf in left_leaves:
+            depth+=initial_distance_matrix.loc[left_leaf.label,right_leaf.label]
+    depth/=len(right_leaves)*len(left_leaves)
+    return depth/2
+
 def create_final_matrix(distance_matrix:DataFrame):
     tree={k:Node(k) for k in  distance_matrix.columns}
-    #print(tree)
+    print(tree)
     current_matrix=distance_matrix.copy()
-    #print(current_matrix)
+    print(current_matrix)
     while len(current_matrix)>1:
         min_distance=get_smallest_distance(current_matrix)
         label1, label2=get_position_of_smallest_distance(min_distance,current_matrix)
@@ -278,7 +301,7 @@ def create_final_matrix(distance_matrix:DataFrame):
         node.right=tree[label2]
         tree[label1].parent = node
         tree[label2].parent = node
-        node.weight =  float(min_distance / 2)
+        node.weight = calcualte_internal_node_depth(node,distance_matrix)
         tree[new_label] = node
         current_matrix=new_distance_matrix(current_matrix,(label1, label2))
         #print(current_matrix)

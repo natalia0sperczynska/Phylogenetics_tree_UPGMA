@@ -47,15 +47,16 @@ if __name__ == '__main__':
 
     min=get_smallest_distance(distance_table)
     position=get_position_of_smallest_distance(min,distance_table)
-    depth=min/2
-
-    print(min)
-    print(position)
-
-    new_table1 = new_distance_matrix(distance_table,position)
-    print(new_table1)
+    # depth=min/2
+    #
+    # print(min)
+    # print(position)
+    #
+    # new_table1 = new_distance_matrix(distance_table,position)
+    # print(new_table1)
     root_node = create_final_matrix(distance_table)
 
     print("TREE:")
     root_node.print()
+
     visualize_tree(root_node)
