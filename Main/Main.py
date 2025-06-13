@@ -95,7 +95,18 @@ def show_results_for_user_seq_input(sequences:list):
     table1 = msa_to_table(msa_result)
     table_without_gaps = remove_gaps(table1)
     print(table_without_gaps)
-    show_results_distance_matrix(table_without_gaps)
+    distance_table=get_distances(table_without_gaps)
+    show_results_distance_matrix(distance_table)
+
+    print(distance_table)
+    min = get_smallest_distance(distance_table)
+    position = get_position_of_smallest_distance(min, distance_table)
+    root_node = create_final_matrix(distance_table)
+
+    print("TREE:")
+    root_node.print()
+
+    visualize_tree(root_node)
 
 def show_results_distance_matrix(distance_table:DataFrame):
     root_node = create_final_matrix(distance_table)
@@ -137,6 +148,3 @@ def example_data():
 
 if __name__ == '__main__':
     get_user_input()
-    # seg = [convert_to_sequence("ATTGCCATT"), convert_to_sequence("ATGGCCATT"), convert_to_sequence("ATCCATTTTT"), convert_to_sequence("ATCTTCTT"),
-    #        convert_to_sequence("ACTGACC")]
-

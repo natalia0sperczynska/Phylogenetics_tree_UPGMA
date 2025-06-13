@@ -186,7 +186,7 @@ def get_distances(df:DataFrame)->DataFrame:
     data=df.to_numpy()
     for i in range(data.shape[0]):
         diff = (data != data[i]).sum(axis=1)
-        distance_matrix.iloc[i, :] = diff
+        distance_matrix.iloc[i, :] = diff.astype(float)
     return distance_matrix
 
 def get_smallest_distance(df:DataFrame):
@@ -230,7 +230,7 @@ def calcualte_internal_node_depth(node : Node, initial_distance_matrix : DataFra
     left_leaves = node.left.get_leaves()
     for right_leaf in right_leaves:
         for left_leaf in left_leaves:
-            depth+=initial_distance_matrix.loc[left_leaf.label,right_leaf.label]
+            depth += float(initial_distance_matrix.loc[left_leaf.label, right_leaf.label])
     depth/=len(right_leaves)*len(left_leaves)
     return depth/2
 
