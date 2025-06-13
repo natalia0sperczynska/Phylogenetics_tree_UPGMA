@@ -54,7 +54,6 @@ def sequences_manually():
         print(final_result)
         visualize_tree(root_node)
         save_results(final_result)
-
     except Exception as e:
         print(f"Error processing sequences: {str(e)}")
 
@@ -100,6 +99,8 @@ def distance_matrix_manually():
         save_results(final_result)
     except Exception as e:
         print(f"Error processing sequences: {str(e)}")
+        return None
+
 
 def show_results_distance_matrix(distance_table:DataFrame):
     root_node = create_final_matrix(distance_table)
@@ -180,13 +181,13 @@ def results_sequences_distance_matrix(distance_matrix,root_node):
         results.append(str(content))
     return "\n".join(results)
 
-def save_results(results_text: str, filename: str = None):
-    if filename is None:
-        filename = f"upgma_results.txt"
+
+def save_results(results_text: str, filename: str = "upgma_results.txt"):
     try:
-        with open(filename, 'w') as f:
+        full_path = os.path.abspath(filename)
+        with open(filename, 'w',encoding='utf-8') as f:
             f.write(results_text)
-        print(f"\nResults successfully saved to {filename}")
+        print(f"\nResults successfully saved to {full_path}")
     except Exception as e:
         print(f"Error saving results: {str(e)}")
 
@@ -204,4 +205,8 @@ def get_tree_text(root_node):
     return buffer.getvalue()
 
 if __name__ == '__main__':
+    import os
+    print(f"\nCurrent working directory: {os.getcwd()}")
     get_user_input()
+    # seg = [convert_to_sequence("ATTGCCATT"), convert_to_sequence("ATGGCCATT"), convert_to_sequence("ATCCATTTTT"), convert_to_sequence("ATCTTCTT"),
+    #        convert_to_sequence("ACTGACC")]
