@@ -1,5 +1,4 @@
-from ete3 import add_face_to_node
-from numpy.random import randint
+from ete3 import add_face_to_node, Tree, TreeStyle, NodeStyle, TextFace
 
 from Algorithm.Alghorithm import *
 def visualize_tree(root_node: Node):
